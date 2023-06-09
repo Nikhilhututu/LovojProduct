@@ -36,26 +36,30 @@ const Wrapper = styled.div`
         color: aliceblue;
         gap: 1rem;
         padding: 2rem;
+        user-select: none;
         div{
-            font-size: 1.5rem;
-            padding: 2rem;
-            background-color: #213555;
-            border-radius: 10px;
-            border: 1px solid aliceblue;
+            font-size: 1rem;
+            color: #F1F6F9;
+            padding: .5rem;
+            background-color: #212A3E;
+            border-radius: 5px;
+            border: 1px solid #F1F6F9;
             cursor: pointer;
         }
         .active{
-            border: 1px solid yellow;
+            border: 2px solid #FFF9DE;
         }
     }
     input{
         padding: 2rem ;
-        font-size: 1.3rem;
+        font-size: 1rem;
         cursor: pointer;
+        color: aliceblue;
+        user-select: none;
     }
     input[type="file"]::file-selector-button {
             border: 2px solid aliceblue;
-            padding: 1.5rem;
+            padding: .5rem;
             border-radius: 0.2em;
             background-color: #213555;
             transition: 1s;
