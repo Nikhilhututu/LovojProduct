@@ -1,69 +1,192 @@
 import React from 'react';
 import styled from 'styled-components';
-import { changeTexture,changeShirt } from './Web3D';
+import { mShirtObj } from './Web3D';
+
+const uiBtn=["full_sleeves","half_sleeves","normal_collar","stand_collar","button","thread"];
 const UI = () => {
     const [isFull,setFull] = React.useState(true);
-    const onClickItem=(e,type)=>{
+    const [type,setType]   = React.useState(0);
+    const [isNormalCollar,setCollar] = React.useState(true);
+    
+    const onClickShirtType=(type)=>{
         if(type ==='full')
             setFull(true);
         else    
             setFull(false);
-        changeShirt(type==='full'?true:false);
+        mShirtObj.changeShirt(type==='full'?true:false);
+    }
+    const onClickCollarType=(type)=>{
+        if(type ==='normal')
+            setCollar(true);
+        else    
+            setCollar(false);
+        mShirtObj.changeCollar(type==='normal'?true:false);
+    }
+    const onClickIcon=(current,id)=>{
+        const buttons = document.querySelectorAll('.active');
+        buttons.forEach((e,i)=>{
+            e.classList.remove('active');
+        })
+        current.target.classList.add('active');
+        document.getElementsByClassName('file-input-container')[0].style.top = 2+id*5.2+"rem";
+        document.getElementsByClassName('color-input-container')[0].style.top = 2+id*5.2+"rem";
+        switch(id){
+            case 0:
+                onClickShirtType("full");
+                document.getElementsByClassName('file-input-container')[0].style.display = "block";
+                document.getElementsByClassName('color-input-container')[0].style.display = "none";
+                break;
+            case 1:
+                onClickShirtType("half");
+                document.getElementsByClassName('file-input-container')[0].style.display = "block";
+                document.getElementsByClassName('color-input-container')[0].style.display = "none";
+                break;
+            case 2:
+                onClickCollarType("normal");
+                document.getElementsByClassName('file-input-container')[0].style.display = "block";
+                document.getElementsByClassName('color-input-container')[0].style.display = "none";
+                break;
+            case 3:
+                onClickCollarType("stand");
+                document.getElementsByClassName('file-input-container')[0].style.display = "block";
+                document.getElementsByClassName('color-input-container')[0].style.display = "none";
+                break;
+            case 4:
+                document.getElementsByClassName('file-input-container')[0].style.display = "none";
+                document.getElementsByClassName('color-input-container')[0].style.display = "block";
+                break;
+            case 5:
+                document.getElementsByClassName('file-input-container')[0].style.display = "none";
+                document.getElementsByClassName('color-input-container')[0].style.display = "block";
+                break;
+        }
     }
     return (
         <Wrapper>
             <div className='container'>
-                <div className={isFull?'active':""}  onClick={(e)=>{
-                    onClickItem(e,"full");
-                }}>Full Sleeve</div>
-                <div className={!isFull?'active':""} onClick={(e)=>{
-                    onClickItem(e,"half");
-                }}>Half Sleeve</div>
-            </div> 
-            <input type="file"   accept=".jpg, .jpeg, .png" id="myFile" name="filename" onChange={(e)=>{
-                 const url = URL.createObjectURL(e.target.files[0]);
-                 changeTexture(isFull,url);
-            }}/>
+                {
+                    uiBtn.map((src,index)=>{
+                         return(
+                                <div className={index===0?'img-icons active':'img-icons'} key={index} onClick={(e)=>{
+                                        setType(index);
+                                        onClickIcon(e,index);
+                                }} >
+                                    <img src={`./3dmodel/ui/${src}.png`} alt={src} />
+                                </div>
+                          )
+                     })
+                }
+         </div> 
+          <div className='container2'>
+             <div className='file-input-container'>
+                    <input  className='file-input' type="file" accept=".jpg, .jpeg, .png" id="my-file" name="shirt_name" onChange={(e)=>{
+                        const url = URL.createObjectURL(e.target.files[0]);
+                        switch(type){
+                            case 0:case 1:
+                                // console.log("%%%%%%%")
+                                    mShirtObj.changeShirtTexture(isFull,url);
+                                break;
+                            case 2:case 3:
+                                    mShirtObj.changeCollarTexture(url);
+                                break;
+                        }
+                        
+                    }}/>
+                    <label className='input-label' htmlFor="my-file" >upload</label>
+             </div>
+             <div className='color-input-container'>
+                    <input  className='color-input' type='color'  id="color-pick" name="color-change" onChange={(e)=>{
+                        switch(type){
+                            case 4: 
+                                mShirtObj.changeButtonColor(e.target.value,"button");
+                                break;    
+                            case 5:
+                                mShirtObj.changeButtonColor(e.target.value,"thread");
+                                break;    
+                        }
+                    }}/>
+                    <label className='input-label' htmlFor="color-pick" >Color</label>
+             </div>
+         </div>
         </Wrapper>
     );
     
 };
 export default UI;
-
-const Wrapper = styled.div`
+const Wrapper = styled.section`
+    position: absolute;
+    width: 100%;
+    display: flex;
+    flex-direction: row-reverse;
+    pointer-events: none;
     .container{
+        pointer-events: all;
         display: flex;
-        color: aliceblue;
         gap: 1rem;
-        padding: 2rem;
+        padding: 1rem;
         user-select: none;
-        div{
-            font-size: 1rem;
-            color: #F1F6F9;
-            padding: .5rem;
-            background-color: #212A3E;
-            border-radius: 5px;
-            border: 1px solid #F1F6F9;
+        flex-direction: column;
+        .img-icons{
+            width: 4rem;
             cursor: pointer;
+            /* outline: #213555 solid; */
+            img{
+                padding: 0%;
+                margin: 0%;
+                width: 100%;
+                text-align: center;
+            }
         }
         .active{
-            border: 2px solid #FFF9DE;
+            outline: aliceblue solid;
         }
     }
-    input{
-        padding: 2rem ;
-        font-size: 1rem;
-        cursor: pointer;
-        color: aliceblue;
-        user-select: none;
-    }
-    input[type="file"]::file-selector-button {
-            border: 2px solid aliceblue;
-            padding: .5rem;
-            border-radius: 0.2em;
-            background-color: #213555;
-            transition: 1s;
+    .container2{
+        display: flex;
+        flex-direction: column;
+        padding: 1rem;
+        margin-top: 1.5rem;
+        pointer-events: all;
+        gap: 2rem;
+        .file-input-container{
+            position: absolute;     
+            right: 6rem;
+            top: 2rem;
+            .file-input{
+                width: 0;
+                height: 0;
+                padding: 0%;
+                margin: 0%;
+                overflow: hidden;
+            }
+        }
+        .color-input-container{
+            position: absolute;     
+            right: 6rem;
+            top: 2rem;
+            display: none;
+            .color-input{
+                width: 4rem;
+                height: 2rem;
+                margin-right: .5rem;
+            }
+        }
+        .input-label{
+            padding: .5rem 1.5rem;
+            font-size: 1.2rem;
+            user-select: none;
+            background-color:#213555;
             color: aliceblue;
+            border-radius: 10px;
+            cursor: pointer;
+            display: inline-block;
+            text-transform: capitalize;
+            transition: all .4s;
+            outline: 1px solid #DDE6ED;
+            &:hover{
+                background-color:#DDE6ED;
+                color:#213555;
+            }
         }
-
+    }
 `
