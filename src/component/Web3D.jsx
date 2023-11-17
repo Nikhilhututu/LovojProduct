@@ -4,8 +4,13 @@ import * as THREE from 'three';
 import {GLTFLoader} from 'three/examples/jsm/loaders/GLTFLoader';
 import { DRACOLoader } from 'three/examples/jsm/loaders/DRACOLoader.js';
 import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
+import { CiHome } from "react-icons/ci";
+import * as CONFIG_DATA from '../ConfigData';
+import { GENDER } from './Home';
+import { NavLink } from 'react-router-dom';
 let threeContainer;
 let mShirtObj;
+const cloth_scale = .0176;
 const Web3D = () => {
     threeContainer = useRef(null);
     React.useEffect(()=>{
@@ -22,24 +27,30 @@ const Web3D = () => {
             <div className='loader_container' id='loader'>
                <div className='lds-dual-ring'></div>
             </div>
-            <div className='view_container'>
-                 <div onClick={()=>{
-                    onClickView(0);
-                 }}>
-                    Front
-                 </div>
-                  <div onClick={()=>{
-                     onClickView(1);
-                  }}>
-                      back
-                  </div>
-                  <div onClick={()=>{
-                     onClickView(2);
-                  }}>
-                      side
-                  </div>
-             </div>  
-            <div className='three_container' id='3d-container'></div>
+            <div className='view_main_container'>
+                <div className='view_container'>
+                    <div onClick={()=>{
+                        onClickView(0);
+                    }}>
+                        Front
+                    </div>
+                    <div onClick={()=>{
+                        onClickView(1);
+                    }}>
+                        back
+                    </div>
+                    <div onClick={()=>{
+                        onClickView(2);
+                    }}>
+                        side
+                    </div>
+                </div>  
+             </div>
+            <div className='three_container' id='3d-container'>
+                    <NavLink to={"/"} className={'nav_link'}>
+                        <CiHome className='home_btn'/>
+                    </NavLink>
+            </div>
         </Wrapper>
     );
     
@@ -60,9 +71,18 @@ export class Shirt3d{
         this.canvasW = 0;
         this.canvasH = 0;
         this.modelRoot= null;
+        this.male     = {model:"",texture:""};
+        
+        this.length   = {model:"",texture:""};
+        this.front    = {model:"",texture:""};
+        this.back     = {model:"",texture:""};        
+        this.sleeves  = {model:"",texture:""};        
+
         this.shirt    = {model:"",texture:""};
         this.trouser  = {model:"",texture:""};
-        this.male     = {model:"",texture:""};
+        this.shirt_back  = {model:"",texture:""};        
+        this.shirt_collar = {model:"",texture:""};        
+        this.shirt_cuffs = {model:"",texture:""};        
         this.init();
     }
     init(){
@@ -140,71 +160,73 @@ export class Shirt3d{
         this.dracoLoader.setDecoderPath('./draco/gltf/');
         this.glbLoader.setDRACOLoader(this.dracoLoader);
         this.textureLoader = new THREE.TextureLoader(this.loadingManager);
-        const ratio = 1;
-        const scale = .75;
-        const planGeometry = new THREE.PlaneGeometry(scale,scale*ratio,32,32);
-        this.maleMesh  = new THREE.Mesh(planGeometry);
-        this.maleMesh.name="male_pos";
-        const texture   = this.textureLoader.load("3dmodel/body_images/front_face.png");
-        texture.colorSpace = THREE.SRGBColorSpace;
-        texture.wrapS = THREE.RepeatWrapping;
-        texture.wrapT = THREE.RepeatWrapping;
-        texture.magFilter = THREE.NearestFilter;
-        texture.minFilter  = THREE.NearestFilter;
-        
-        const maleMat = new THREE.MeshBasicMaterial({map:texture});
-        maleMat.alphaTest=true;
-        this.maleMesh.material = maleMat;
-        this.maleMesh.position.set(0,3.84,-.010);
-        this.scene.add(this.maleMesh);
 
-        const cloth_scale = .0176;
-        this.glbLoader.load("3dmodel/male/scene.glb",(gltf)=>{
-            this.male.model = gltf.scene;
-            this.modelRoot.add(this.male.model);
-            this.male.model.scale.set(cloth_scale,cloth_scale,cloth_scale);
-        })
-        this.glbLoader.load("3dmodel/male/shirt.glb",(gltf)=>{
-            this.shirt.model = gltf.scene;
-            this.shirt.model.scale.set(cloth_scale,cloth_scale,cloth_scale);
-            // this.shirt.model.renderOrder=0;
-            this.modelRoot.add(this.shirt.model);
-            this.shirt.model.traverse((child)=>{
-                if(child.isMesh){
-                    this.updateTexture("shirt",'3dmodel/body_images/texture.jpg');
-                }
+        if(GENDER.type ==='male'){
+            const ratio = 1;
+            const scale = .75;
+            const planGeometry = new THREE.PlaneGeometry(scale,scale*ratio,32,32);
+            this.maleMesh  = new THREE.Mesh(planGeometry);
+            this.maleMesh.name="male_face";
+            const texture   = this.textureLoader.load("3dmodel/body_images/front_face.png");
+            texture.colorSpace = THREE.SRGBColorSpace;
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.RepeatWrapping;
+            texture.magFilter = THREE.NearestFilter;
+            texture.minFilter  = THREE.NearestFilter;
+            
+            const maleMat = new THREE.MeshBasicMaterial({map:texture});
+            maleMat.alphaTest=true;
+            this.maleMesh.material = maleMat;
+            this.maleMesh.position.set(0,3.84,-.010);
+            this.scene.add(this.maleMesh);
+
+            this.glbLoader.load("3dmodel/male_model.glb",(gltf)=>{
+                this.male.model = gltf.scene;
+                this.modelRoot.add(this.male.model);
+                this.male.model.scale.set(cloth_scale,cloth_scale,cloth_scale);
+                
             })
-        })
-        this.glbLoader.load("3dmodel/male/trouser.glb",(gltf)=>{
-            this.trouser.model = gltf.scene;
-            this.trouser.model.scale.set(cloth_scale,cloth_scale,cloth_scale);
-            this.modelRoot.add(this.trouser.model);
-            // this.trouser.model.position.y=-.06;
-            this.trouser.model.traverse((child)=>{
-                if(child.isMesh){
-                    child.material.dispose();
-                    child.material.needsUpdate = true;
-                    // child.material = new THREE.MeshStandardMaterial();
-                    child.material.color = new THREE.Color(0x000000);
-                    child.material.roughness=1;
-                    child.material.metalness=0;
-                //   child.material.depthTest = false;
-                //   child.material.renderOrder=10;
-                }
+            this.glbLoader.load("3dmodel/shirt.glb",(gltf)=>{
+                this.shirt.model = gltf.scene;
+                this.modelRoot.add(this.shirt.model);
+                this.shirt.model.scale.set(cloth_scale,cloth_scale,cloth_scale);
+                this.updateTexture(this.shirt.model,'./texture/texture.jpg');
             })
-            this.scene.add(this.modelRoot);
-        })
+            this.glbLoader.load("3dmodel/trouser.glb",(gltf)=>{
+                this.trouser.model = gltf.scene;
+                this.modelRoot.add(this.trouser.model);
+                this.trouser.model.scale.set(cloth_scale,cloth_scale,cloth_scale*.965);
+                this.trouser.model.traverse((child)=>{
+                    if(child.isMesh){
+                        child.material.color = new THREE.Color(0x000000) ;
+                    }
+                });
+            })
+            this.loadMaleModel(CONFIG_DATA.ShirtData.back_model.url,CONFIG_DATA.MALE_CHANGE_TYPES.back);
+            this.loadMaleModel(CONFIG_DATA.ShirtData.cuff_model.url,CONFIG_DATA.MALE_CHANGE_TYPES.cuffs);
+            this.loadMaleModel(CONFIG_DATA.ShirtData.collar_model.url,CONFIG_DATA.MALE_CHANGE_TYPES.collar);
+        }
+        else{
+            this.glbLoader.load("3dmodel/girl_model.glb",(gltf)=>{
+                this.male.model = gltf.scene;
+                this.modelRoot.add(this.male.model);
+                this.male.model.scale.set(cloth_scale,cloth_scale,cloth_scale);
+            })
+        }
+
+        
+        // this.loadModel("3dmodel/collar/standard.glb",CONFIG_DATA.CHANGE_TYPES.collar);
+        // this.loadModel("3dmodel/male/trouser.glb",'');
         this.scene.add(this.modelRoot);
         this.modelRoot.rotation.y = 0;
         this.modelRoot.position.y = .8;
-        this.camera.lookAt(new THREE.Vector3(0,2.5,0))
+        this.camera.lookAt(new THREE.Vector3(0,2.5,0));
         const pos = {x:0,y:0,z:0,val:.01};
-
         document.addEventListener("keydown",(e)=>{
             // console.log(e.key) ;
              switch(e.key){
                  case "ArrowLeft":
-                        pos.x -=pos.val;
+                    pos.x -=pos.val;
                     break;
                 case "ArrowRight":
                     pos.x +=pos.val;
@@ -215,13 +237,20 @@ export class Shirt3d{
                 case "ArrowDown":
                     pos.y -=pos.val;
                     break;
+                case "1":
+                    pos.z -=pos.val;
+                    break;
+                case "2":
+                    pos.z +=pos.val;
+                    break;
+                default:
+                    break;    
              }
-             console.log("!!! pos!! ",pos);
-            //  this.maleMesh.position.set(0,pos.x,pos.y);
+            //  console.log("!!! pos!! ",pos);
+            //  this.collar.model.position.set(0,pos.y,pos.z);
             // this.modelRoot.scale.x=.02;
         })
         this.loadingManager.onStart=(url, itemsLoaded, itemsTotal)=>{
-            // console.log('Loading started');
             document.getElementById("loader").style.display = "flex";
             // document.getElementsByClassName("loader")[0].style.backgroundColor  =  "rgba(0,0,0,.85)";
         }
@@ -230,6 +259,132 @@ export class Shirt3d{
             document.getElementById("loader").style.display = "none";
         }
     }
+    cleanObject(model){
+        if(!model)
+           return;
+         model.traverse((child)=>{
+             if(child.material)
+                 child.material.dispose();
+             if(child.geometry)
+                 child.geometry.dispose();
+         });
+         this.modelRoot.remove(model);
+         model = null;
+     }
+    loadMaleModel(path,type){
+        switch(type){
+            case CONFIG_DATA.MALE_CHANGE_TYPES.back:
+                    this.cleanObject(this.shirt_back.model);
+                break;
+            case CONFIG_DATA.MALE_CHANGE_TYPES.collar:
+                    this.cleanObject(this.shirt_collar.model);
+                break;
+            case CONFIG_DATA.MALE_CHANGE_TYPES.cuffs:
+                    this.cleanObject(this.shirt_cuffs.model);
+                break;
+            default:
+                break;
+        }
+        this.glbLoader.load(path,(gltf)=>{
+            const tmpModel = gltf.scene;
+            
+            switch(type){
+                case CONFIG_DATA.MALE_CHANGE_TYPES.back:
+                        tmpModel.scale.set(cloth_scale,cloth_scale,cloth_scale);
+                        this.shirt_back.model = tmpModel;
+                        if(this.shirt_back.texture){
+                            this.updateTexture(this.shirt_back.model,this.shirt_back.texture);
+                        }
+                        else{
+                            this.updateTexture(this.shirt_back.model,'./texture/texture.jpg');
+                        }    
+                            
+                    break;
+                case CONFIG_DATA.MALE_CHANGE_TYPES.cuffs:
+                        tmpModel.scale.set(cloth_scale,cloth_scale,cloth_scale);
+                        this.shirt_cuffs.model = tmpModel;
+                        if(this.shirt_cuffs.texture)
+                            this.updateTexture(this.shirt_cuffs.model,this.shirt_cuffs.texture);
+                        else    
+                            this.updateTexture(this.shirt_cuffs.model,'./texture/texture.jpg');
+                        
+                    break;
+                case CONFIG_DATA.MALE_CHANGE_TYPES.collar:
+                        console.log("",tmpModel);
+                        this.shirt_collar.model = tmpModel;
+                        tmpModel.scale.set(cloth_scale,cloth_scale,cloth_scale);
+                        // this.shirt_collar.model.scale.set(.0018,.0018,.0018);
+                        // this.shirt_collar.model.position.set(0,-.09,-.04) ;
+                        if(this.shirt_collar.texture)
+                             this.updateTexture(this.shirt_collar.model,this.shirt_collar.texture);
+                         else    
+                             this.updateTexture(this.shirt_collar.model,'./texture/texture.jpg');
+                    break;
+                default:
+                    break;    
+            }
+            this.modelRoot.add(tmpModel);
+        })
+    }  
+    loadFemaleModel(path,type){
+            switch(type){
+                case CONFIG_DATA.FEMALE_CHANGE_TYPES.length:
+                        this.cleanObject(this.length.model);
+                    break;
+                case CONFIG_DATA.FEMALE_CHANGE_TYPES.front:
+                        this.cleanObject(this.front.model);
+                    break;
+                case CONFIG_DATA.FEMALE_CHANGE_TYPES.back:
+                        this.cleanObject(this.back.model);
+                    break;
+                case CONFIG_DATA.FEMALE_CHANGE_TYPES.sleeves:
+                        this.cleanObject(this.sleeves.model);
+                    break;
+                default:
+                    break;
+            }
+            this.glbLoader.load(path,(gltf)=>{
+                const tmpModel = gltf.scene;
+                tmpModel.scale.set(cloth_scale,cloth_scale,cloth_scale);
+                switch(type){
+                    case CONFIG_DATA.FEMALE_CHANGE_TYPES.length:
+                            this.length.model = tmpModel;
+                            if(this.length.texture){
+                                this.updateTexture(this.length.model,this.length.texture);
+                            }
+                            else{
+                                this.updateTexture(this.length.model,'./texture/texture.jpg');
+                            }    
+                                
+                        break;
+                    case CONFIG_DATA.FEMALE_CHANGE_TYPES.front:
+                            this.front.model = tmpModel;
+                            if(this.front.texture)
+                                this.updateTexture(this.front.model,this.front.texture);
+                            else    
+                                this.updateTexture(this.front.model,'./texture/texture.jpg');
+                            
+                        break;
+                    case CONFIG_DATA.FEMALE_CHANGE_TYPES.back:
+                            this.back.model = tmpModel;
+                            if(this.back.texture)
+                                 this.updateTexture(this.back.model,this.back.texture);
+                             else    
+                                 this.updateTexture(this.back.model,'./texture/texture.jpg');
+                        break;
+                    case CONFIG_DATA.FEMALE_CHANGE_TYPES.sleeves:
+                            this.sleeves.model = tmpModel;
+                            if(this.sleeves.texture)
+                                 this.updateTexture(this.sleeves.model,this.sleeves.texture);
+                             else    
+                                 this.updateTexture(this.sleeves.model,'./texture/texture.jpg');
+                        break;
+                    default:
+                        break;    
+                }
+                this.modelRoot.add(tmpModel);
+            })
+     }
     changeView(type){
         let texture;
         switch(type){
@@ -245,43 +400,27 @@ export class Shirt3d{
                     texture   = this.textureLoader.load("3dmodel/body_images/side_face.png");
                     this.modelRoot.rotation.y = Math.PI/3;
                 break;
+           default:
+                break;     
         }
-        this.maleMesh.material.needsUpdate= true;
-        texture.colorSpace = THREE.SRGBColorSpace;
-        texture.wrapS = THREE.RepeatWrapping;
-        texture.wrapT = THREE.RepeatWrapping;
-        texture.magFilter = THREE.NearestFilter;
-        texture.minFilter  = THREE.NearestFilter;
-        this.maleMesh.material.map = texture;
+        if(GENDER.type ==='male'){
+            this.maleMesh.material.needsUpdate= true;
+            texture.colorSpace = THREE.SRGBColorSpace;
+            texture.wrapS = THREE.RepeatWrapping;
+            texture.wrapT = THREE.RepeatWrapping;
+            texture.magFilter = THREE.NearestFilter;
+            texture.minFilter  = THREE.NearestFilter;
+            this.maleMesh.material.map = texture;
+        }
     }
-     
-    updateTexture(type,tex){
+    updateTexture(model,tex){
         console.log(tex);
         const texture  = this.textureLoader.load(tex);
-        switch(type){
-            case 'shirt':
-                this.shirt.model.traverse((child)=>{
-                    if(child.isMesh){
-                        this.applyTexture(child,texture);
-                    }
-                })
-            break;
-            case 'collar':
-                this.shirt.model.traverse((child)=>{
-                    if(child.isMesh && child.name.includes("collar")){
-                        this.applyTexture(child,texture);
-                    }
-                })
-                break;
-            case 'cuffs':
-                this.shirt.model.traverse((child)=>{
-                    if(child.isMesh && child.name.includes("cuff")){
-                        this.applyTexture(child,texture);
-                    }
-                })
-             break;
-        }
-        //  document.getElementById("my-file").value = "";
+        model.traverse((child)=>{
+            if(child.isMesh){
+                this.applyTexture(child,texture);
+            }
+        })
      } 
      updateColor(type,color){
         switch(type){
@@ -306,21 +445,21 @@ export class Shirt3d{
                     }
                 })
                 break;
+            default:
+                break;    
         }
      }
      applyTexture(child,texture){
         if(texture){
+            console.log("^^^^^^^^^^^^")
             texture.colorSpace = THREE.SRGBColorSpace;
             texture.wrapS = THREE.RepeatWrapping;
             texture.wrapT = THREE.RepeatWrapping;
             texture.magFilter = THREE.NearestFilter;
             texture.minFilter  = THREE.NearestFilter;
-            texture.repeat.set( .002, .002);
-            texture.center.x = .5;
-            texture.center.y = .5;
-        }
-        if(child.material){
-            child.material.dispose();
+            texture.repeat.set(.002, .002);
+            texture.center.x = 0;
+            texture.center.y = 0;
         }
         // const material = new THREE.MeshStandardMaterial();
         // child.material = new THREE.MeshBasicMaterial();
@@ -366,16 +505,42 @@ export class Shirt3d{
   }
 const Wrapper = styled.section`
    width: 100%;
-   height: 100vh;
+   height: 100%;
    z-index: -1;
-   position: fixed;
    background-color: #9BA4B5;
+   position: absolute;
    .three_container{
+     position: absolute;
+      top: 0%;
       width: 100%;
       height: 100%;
-      position: fixed;
-      top: 0%;
       z-index: -1;
+      .home_btn{
+            position: absolute;
+            user-select: none;
+            padding: .5rem 2rem;
+            font-size: 2rem;
+            width: fit-content;
+            color: #fff;
+            cursor: pointer;
+            &:active{
+                transform: scale(.9);
+            }
+        } 
+       .nav_link{
+            text-decoration: none;
+            &:link,
+            &:visited{
+                color: black;
+            }
+        }  
+   }
+   .view_main_container{
+     margin: auto;
+     width: 100%;
+     display: grid;
+     align-content: center;
+     place-items:center;
    }
    .view_container{
          margin: 1rem;
@@ -385,6 +550,8 @@ const Wrapper = styled.section`
          pointer-events: all;
          cursor: pointer;
          user-select: none;
+         bottom: 0%;
+         position: absolute;
          div{
              padding: .25rem 1.5rem;
              border: 1px solid #213555;
@@ -429,9 +596,18 @@ const Wrapper = styled.section`
         }
     }
     @media screen and (max-width:768px){
+        .view_main_container{
+            /* place-items:initial; */
+        }
         .view_container{
-            width: fit-content;
-            flex-direction: column;
+            /* width: fit-content; */
+            /* flex-direction: column; */
+            /* position: relative; */
+        }
+        .three_container{
+            .home_btn{
+                
+            }
         }
     }
 
